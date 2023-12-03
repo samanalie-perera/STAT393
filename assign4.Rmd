@@ -1,0 +1,250 @@
+---
+title: "STAT 393 Assignment 4"
+author: "Samanalie Perera, 300486075"
+date: "15-10-2023"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## A group of 50 people all wished to lose weight. Each person was assigned randomly to one of three treatment programs. They all followed the instructions given in the assigned program for 4 months. At the end of each month, a researcher measured and recorded each participant’s weight. Data (in the file loss.csv – available on Nuku) include the weight loss since the participants started the program (loss), gender (gender, 0: female; 1: male), a personal identifier (id), initial weight (weight), month (time), and treatment (trt).
+
+## Question 1: Use the following R code to read in the data, then use summary() to display information about all the variables:
+```{r}
+lossdata<-read.table("loss.csv",sep=",",header=T,as.is=T)
+lossdata$trt <- as.factor(lossdata$trt)
+lossdata$gender <- as.factor(lossdata$gender)
+summary(lossdata)
+
+```
+
+## Question 2: Plot the weight loss against the 4 time points (months) for all subjects. Comment, briefly – what features are ‘obvious’?
+
+```{r}
+loss.long <- matrix(lossdata$loss,ncol=4,byrow=T)
+trt.long <- matrix(lossdata$trt,ncol=4,byrow=T)
+plot(range(lossdata$time),range(lossdata$loss),
+type="n",xlab="time",ylab="weight loss", xaxp = c(1, 4, 3))
+for(i in 1:50){
+  if(trt.long[i,1]==1){
+    points(c(1:4),loss.long[i,],type="l",col="purple")}
+  else if(trt.long[i,1]==2){
+    points(c(1:4),loss.long[i,],type="l",col="darkred")}
+  else {points(c(1:4),loss.long[i,],type="l",col="skyblue")}
+}
+```
+The most obvious features is that weight losses increases over time as the people progress within the program. Because this study is for weight loss we can see that the max weight lost after 4 months was 17.3kg. 
+
+
+## Question 3: Consider the following linear model:
+
+$y_ij$ = $\beta0$ + $\beta1(trt2)_ij$ + $\beta2(trt3)_ij$ + $\beta3(gender1)_ij$ + $\beta4(time)_ij$ + $\beta5(weight)_ij$ + $b_i0$ + $b_i1(trt2)_ij$ + $b_i2(trt3)_ij$ + $b_i3(gender1)_ij$ + $b_i4(time)_ij$ + $b_i5(weight)_ij$ + $\epsilon_ij$
+
+where:
+• $(trt2)_ij$ = 1 if the ith subject received treatment 2 at time j. Otherwise, $(trt2)_ij$ = 0,
+
+• $(trt3)_ij$ = 1 if the ith subject received treatment 3 at time j. Otherwise, $(trt3)_ij$ = 0,
+
+• $(gender1)_ij$ = 1 if the ith subject is male. Otherwise, $(gender1)_ij$ = 0,
+
+• $(time)_ij$ is the number of months, j, that the ith subject has been in the program (j = 1, . . . , 4),
+
+• $(weight)_ij$ is the ith subject’s initial weight,
+
+• yij is the response variable: the ith subject’s overall weight loss after j months in the program.
+
+Note: The $(trt2)_ij$ and $(trt3)_ij$ are dummy variables for the treatments. We use the R default setting for handling dummy variables, with the intercept including the first level of the treatments. Also, $(gender1)_ij$ is a dummy variable for gender, with the intercept including the first level; i.e. females
+are included in the intercept.
+
+
+## Question 3a: Name all the time-invariant explantory variables.
+The time-invariant explanatory variables are treatment (trt), gender (gender) and initial weight (weight).
+
+## Question 3b: Fit the model in 6 ways, giving 6 separate model fits, by using the three correlation structures: 
+
+• AR1 (corAR1)
+
+• compound symmetry (corCompSymm)
+
+• general, unrestricted correlation structure (corSymm). 
+
+Also, for each correlation structure fit the random intercept model first, followed by the random intercept plus random slope model. Use the the function lme() and the REML estimation method. Which of the 6 models do you recommend is best, and why?
+
+Note: To fit those 6 models you need to load the R packages MASS and lme. Some suggested code for the random intercept model with the corAR1 correlation structure follows. Also note that even though REML will not return the true log-likelihood, the restricted log-likelihoods can be compared, since every model has the same fixed effects and they are all fitted using the same (REML) approach. So, for example, model selection using penalised log-likelihoods is valid.
+
+```{r}
+library(MASS)
+library(nlme)
+loss.lme1a <- lme(fixed = loss ~ trt + gender + time + weight,
+                  random = ~ 1 | id,
+                  correlation = corAR1(form = ~ time| id ),
+                  method = "REML",
+                  data=lossdata)
+summary(loss.lme1a)
+```
+
+```{r}
+loss.lme1b <- lme(fixed = loss ~ trt + gender + time + weight,
+                  random = ~ time | id,
+                  correlation = corAR1(form = ~ time| id ),
+                  method = "REML",
+                  data=lossdata)
+summary(loss.lme1b)
+```
+
+```{r}
+loss.lme2a <- lme(fixed = loss ~ trt + gender + time + weight,
+                  random = ~ 1 | id,
+                  correlation = corCompSymm(form = ~ time| id ),
+                  method = "REML",
+                  data=lossdata)
+summary(loss.lme2a)
+```
+
+```{r}
+loss.lme2b <- lme(fixed = loss ~ trt + gender + time + weight,
+                  random = ~ time | id,
+                  correlation = corCompSymm(form = ~ time| id ),
+                  method = "REML",
+                  data=lossdata)
+summary(loss.lme2b)
+
+```
+
+```{r}
+loss.lme3a <- lme(fixed = loss ~ trt + gender + time + weight,
+                  random = ~ 1 | id,
+                  correlation = corSymm(form = ~ time| id ),
+                  method = "REML",
+                  data=lossdata)
+summary(loss.lme3a)
+```
+
+```{r}
+loss.lme3b <- lme(fixed = loss ~ trt + gender + time + weight,
+                  random = ~ time | id,
+                  correlation = corSymm(form = ~ time| id ),
+                  method = "REML",
+                  data=lossdata)
+summary(loss.lme3b)
+```
+
+```{r}
+library(pander)
+logLik_values <- c(
+  logLik(loss.lme1a, REML = TRUE),
+  logLik(loss.lme1b, REML = TRUE),
+  logLik(loss.lme2a, REML = TRUE),
+  logLik(loss.lme2b, REML = TRUE),
+  logLik(loss.lme3a, REML = TRUE),
+  logLik(loss.lme3b, REML = TRUE)
+)
+logLik_df <- data.frame(Model = c("loss.lme1a", "loss.lme1b", "loss.lme2a", 
+                                  "loss.lme2b", "loss.lme3a", "loss.lme3b"), 
+                        LogLikelihood = logLik_values)
+pander(logLik_df)
+
+
+```
+
+```{r}
+aic_values <- AIC(loss.lme1a, loss.lme1b, loss.lme2a, loss.lme2b, 
+                  loss.lme3a, loss.lme3b)
+pander(aic_values)
+
+```
+
+```{r}
+bic_values <- BIC(loss.lme1a,loss.lme1b,loss.lme2a,loss.lme2b,
+                  loss.lme3a,loss.lme3b)
+pander(bic_values)
+```
+When picking out the best model using the penalized log likelihood comparison is best, since the fixed effects are the same. So the AIC and BIC values show that the model that is the best is loss.lme1a since it has the lowest AIC value (678.5) and BIC value (707.9). This shows that we choose the model with a random intercept for the patients weight loss. 
+
+## Question 3c: Give the parameter estimates for the model you recommended was best in Question 3b, including the estimated correlation parameters.
+
+```{r}
+beta_hat1a=loss.lme1a$coefficients$fixed
+beta_hat1a
+
+sigma_hat1a = loss.lme1a$sigma
+sigma_hat1a
+
+cov_1a = getVarCov(loss.lme1a)
+cov_1a
+
+summary_loss.lme1a <- summary(loss.lme1a)
+summary_loss.lme1a
+
+```
+
+Given that the loss.lme1a is a corAR1 structure which is a autoregressive correlation structure. In this correlation parameter it's detonated as "phi". The Phi value is 0.107256. $\hat{\sigma}$ = 0.965238. And the covariance matrix is 1.9189 with a standard deviation of 1.3852. 
+
+The fixed effects coefficients $\hat{\beta}$ = ($\hat{\beta0}$, $\hat{\beta1}$, $\hat{\beta2}$, $\hat{\beta3}$, $\hat{\beta4}$, $\hat{\beta5}$) are: 
+
+$\hat{\beta0}$ = -1.5180285
+
+$\hat{\beta1}$ = 0.3703686
+
+$\hat{\beta2}$ = 1.8896905
+
+$\hat{\beta3}$ = -2.2261800
+
+$\hat{\beta4}$ = 2.0640557
+
+$\hat{\beta5}$ = 0.0609064
+
+
+## Question 3d: Interpret $\hat{\beta1}$ and $\hat{\beta2}$ for the model recommended in Question 3b.
+
+The output for the selected model says that treatment 2 has an average weight loss of 0.3704 kg higher than treatment 1 which has a average weight loss of -1.518 kg, with a p-value of 0.5161. Since the p-value is larger than 0.05 significance value, it is not enough for it to be statistically significant. However we can see that for treatment 3 the average weight loss was 1.8897 kg greater than treatment 1 with a p-value of 0.0035 and since this p-value is less than the significance level of 0.05 that means there is a statistically significance between treatment 1 and treatment 3.  
+
+## Question 4: Briefly comment on any differences among the three weight loss programs. Which program would you recommend as most effective?
+
+Based on 3d we can see that treatment program 3 is better than 1, as it has a more significant average weight loss over the individuals. To compare the different programs we can use an anova test. 
+
+```{r}
+anova.lme(loss.lme1a)
+```
+
+Based on this output we can see that each of the terms are significant so in order to directly test if treatment 3 is better than treatment 2, setting the trt level to treatment 2 instead of 1. 
+
+```{r}
+loss.lme1a_treatment2 <- lme(fixed = loss ~ relevel(trt, ref = "2") + gender + time + weight,
+                  random = ~ 1 | id,
+                  correlation = corAR1(form = ~ time| id ),
+                  method = "REML",
+                  data=lossdata)
+summary(loss.lme1a_treatment2)
+```
+Given that we have no set the base level to treatment 2 we can see that treatment 2 now has an average weight loss of 1.52kg higher than treatment 3, with a p-value of 0.0101 which is less than the significant value of 0.05, meaning that there is enough to say that treatment 3 is the best program for weight loss on average. 
+
+
+## Question 5: Consider whether your recommended weight loss program should be the same for males and females. Can you perform a hypothesis test for a gender difference in the effectiveness of the different programs, using the model you recommended in Question 3b? If so, report that test result and if not, find a way to carry out that hypothesis test and then report the result.
+
+To find out whether or not the treatment program 3 is best for both males and females we'll need to conduct an anova test to see if there is a significance in the treatment programs for each gender. To do so, we'll need to multiple the treatment (trt) and gender to find the interaction term between the two factors. 
+
+Since we are wanting to see the effects of the treatment programs on weight loss between males and females we want to use ML instead of REML since ML is used for fixed effects.
+
+```{r}
+loss.lme1a_treatment2Gender <- lme(fixed = loss ~ trt * gender + time + weight,
+                  random = ~ 1 | id,
+                  correlation = corAR1(form = ~ time| id ),
+                  method = "ML",
+                  data=lossdata)
+anova.lme(loss.lme1a_treatment2Gender)
+
+```
+Based on this output we can see that there is no interaction term between gender and treatment programs. This is because the p-value is 0.5638 and since it's much larger than the significant level of 0.05. Based on this we can see that program 3 seems to be the best program for both males and females, given the other variables are fixed. 
+
+
+
+
+
+
+
