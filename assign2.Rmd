@@ -1,0 +1,306 @@
+---
+title: "Assignment2_STAT393"
+author: "Samanalie Perera 300486075"
+date: "18 August 2023"
+classoption: 12pt
+
+header-includes:
+  - \usepackage{newpxtext,eulerpx, amsmath}
+  - \usepackage{bm,bbm}
+  - \usepackage{float}
+  - \floatplacement{figure}{H}
+
+output: bookdown::pdf_document2
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+## Question 1:
+### Low birth weight, defined as birth weight less than 2500 grams, is an outcome that has been of concern to physicians. This is due to the fact that infant mortality rates and birth defect rates are very high for low birth weight babies. A woman’s behavior during pregnancy (e.g.smoking habits) can greatly alter the chances of carrying the baby to term and, consequently, of delivering a baby of normal birth weight. In the study, the following data contains information of 20 births to women. The variables include the baby’s weight (Bwtkg) in kilograms,race (Race = 1 for white; Race = 2 for black; Race = 3 for other), smoking status during pregnancy (Smoke = 0 for No; Smoke = 1 for Yes), and weight of mother at last menstrual period (Lwtkg) in kilograms. Let yi j be the baby’s weight for the jth mother whose race is on level i.
+
+```{r}
+babydata <- read.table(file("a2_data.txt"), header = T)
+babydata$Smoke <- as.double(babydata$Smoke)  
+babydata$Race <- as.double(babydata$Race)  
+
+library(pander)
+#names(babydata) <- c('Race(i)', 'Smoke(xij)','Lwtkg(wij)','Bwtkg(yij)')
+names(babydata) <- c('Race', 'Smoke','Lwtkg','Bwtkg')
+
+pander(babydata, style='rmarkdown')
+
+
+```
+
+## (a).
+For a model y = X$\beta$ + $\epsilon$, let $y^T$ = (4.59, 3.60, 4.17, 3.88, 2.47, 2.99, 3.94, 2.42, 3.03, 2.41, 2.30, 2.66, 3.64, 2.98, 3.32, 2.92, 2.33, 2.06, 3.54, 2.50). Write down the design matrix X and the vector of parameters $\beta$ in the matrix form, for each of the following models: 
+
+
+M0: $y_ij$ + $\alpha$ + $\epsilon_ij$ where $\epsilon_ij$$\sim$ N(0, $\sigma^2$).
+
+
+M1: $y_ij$ + $\alpha$ + $\beta1x_ij$ + $\beta2x_ij$ + $\epsilon_ij$ where $\epsilon_ij$$\sim$ N(0, $\sigma^2$).
+
+
+M2: $y_ij$ + $\alpha$ + $\beta1x_ij$ + $\beta2x_ij$ + $\tau_i$ $\epsilon_ij$ where $\epsilon_ij$$\sim$ N(0, $\sigma^2$).
+
+
+Note: For Race, use the constraint that the sum equals to zero. Although the smoking status is a categorical variable, because it only has two levels, the model that treats it as a “factor” is equivalent to the model that treats it as “numerical”. That is, each model has only one parameter associated with the smoking effect and the two models have the same model fit. Here, we treat the smoking status as “numerical” ($x_ij$) having values 0 and 1.
+```{r, echo=FALSE,results='hide'}
+m0 <- lm(Bwtkg~1, data=babydata, x = T)
+summary(m0)
+m0$x
+```
+
+### Model 0
+
+$$
+\boldsymbol{X}=\begin{pmatrix}
+1\\
+1\\
+1\\
+1\\
+1\\
+1\\
+1\\
+1\\
+1\\
+1\\
+1\\
+1\\
+1\\
+1\\
+1\\
+1\\
+1\\
+1\\
+1\\
+1\\
+\end{pmatrix}
+\boldsymbol{\beta}=\begin{pmatrix}
+\alpha \\
+\end{pmatrix}
+$$
+
+```{r, echo=FALSE,results='hide'}
+m1<-lm(Bwtkg~Smoke+Lwtkg,data=babydata,x=T)
+summary(m1)
+m1$x
+```
+
+### Model 1
+
+$$
+\boldsymbol{X}=\begin{pmatrix}
+1\ 0\ 52.7\\
+1\ 0 \ 79.5\\
+1\ 0\ 54.5\\
+1\ 1\ 59.1\\
+1\ 1\ 86.4\\
+1\ 1\ 56.4\\
+1\ 1\ 77.3\\
+1\ 1\ 50.0\\
+1\ 1\ 49.5\\
+1\ 1\ 64.5\\
+1\ 1\ 55.0\\
+1\ 1\ 55.9\\
+1\ 1\ 43.2\\
+1\ 1\ 63.6\\
+1\ 0\ 71.8\\
+1\ 1\ 76.4\\
+1\ 0\ 43.6\\
+1\ 0\ 56.8\\
+1\ 0\ 55.9\\
+1\ 1\ 42.7\\
+\end{pmatrix}
+\boldsymbol{\beta}=\begin{pmatrix}
+\alpha \\
+\beta_1 \\
+\beta_2 \\
+\end{pmatrix}
+$$
+
+```{r, echo=FALSE,results='hide'}
+m2 <- lm(Bwtkg~Smoke+Lwtkg+Race,data=babydata,x=T)
+summary(m2)
+m2$x
+```
+
+### Model 2
+
+$$
+\boldsymbol{X}=\begin{pmatrix}
+1\ 0\ 52.7\ 1\\
+1\ 0 \ 79.5\ 1\\
+1\ 0\ 54.5\ 1\\
+1\ 1\ 59.1\ 1\\
+1\ 1\ 86.4\ 1\\
+1\ 1\ 56.4\ 1\\
+1\ 1\ 77.3\ 1\\
+1\ 1\ 50.0\ 1\\
+1\ 1\ 49.5\ 1\\
+1\ 1\ 64.5\ 1\\
+1\ 1\ 55.0\ 1\\
+1\ 1\ 55.9\ 1\\
+1\ 1\ 43.2\ 1\\
+1\ 1\ 63.6\ 1\\
+1\ 0\ 71.8\ 2\\
+1\ 1\ 76.4\ 2\\
+1\ 0\ 43.6\ 3\\
+1\ 0\ 56.8\ 3\\
+1\ 0\ 55.9\ 3\\
+1\ 1\ 42.7\ 3\\
+\end{pmatrix}
+\boldsymbol{\beta}=\begin{pmatrix}
+\alpha \\
+\beta_1 \\
+\beta_2 \\
+\tau_i\\
+\end{pmatrix}
+$$
+
+## (b). 
+
+Fit each of the models M0-M2 in (a) using lm() in R, with the constraint that the sum equals to zero. For each case show coefficients, standard errors and p-values from summary() in R.
+
+```{r}
+m0 <- lm(Bwtkg~1, data=babydata, x = T)
+summary(m0)
+m0$coef
+```
+
+
+$\hat{\alpha}$ = 3.087, ($\hat{\alpha}$) = 0.160, p-value: 6.09e-14
+
+
+
+```{r}
+m1<-lm(Bwtkg~Smoke+Lwtkg,data=babydata,x=T)
+summary(m1)
+m1$coef
+```
+
+
+$\hat{\alpha}$ = 3.0434, $\hat{(\alpha)}$ = 0/81750, p-value = 0.00169
+
+
+$\hat{x}$ = -0.44314, $\hat{(x)}$ = 0.33659, p-value = 0.20546
+
+
+$\hat{w}$ = 0.00556, $\hat{(w)}$ = 0.01301, p-value = 0.67459
+
+
+
+```{r}
+m2 <- lm(Bwtkg~Smoke+Lwtkg+C(Race,sum),data=babydata,x=T)
+summary(m2)
+m2$coef
+```
+
+
+$\hat{\alpha}$ = 4.602216, $\hat{(\alpha)}$ = 0.916857, p-value = 0.00126
+
+
+$\hat{x}$ = -0.843740, $\hat{(x)}$ = 0.326523, p-value = 0.019979
+
+
+$\hat{w}$ = -0.002894, $\hat{(w)}$ = 0.011634, p-value = 0.806734
+
+
+$\hat{\tau}$ = -0.528942, $\hat{(\tau)}$ = 0.199827, p-value = 0.017576
+
+
+
+## (c). 
+
+Consider the model M2 from part (a). Use matrix methods to reproduce the following results given by summary():  
+
+i. coefficients estimates, 
+
+ii. residual standard error
+
+iii. coefficients standard errors.
+
+(i).
+```{r}
+y <- matrix(babydata$Bwtkg,nrow=20,ncol=1)
+x <- matrix(m2$x,nrow=20)
+xtx <- t(x)%*%x
+
+inv.xtx <- solve(xtx)
+xty <- t(x)%*%y
+
+beta <- inv.xtx%*%xty
+beta
+```
+(ii).
+```{r}
+id <- diag(rep(1,20))
+mse <- (t(y)%*%(id-x%*%inv.xtx%*%t(x))%*%y)/(20-5)
+mse
+```
+
+(iii). 
+```{r}
+se <- mse^0.5
+se
+```
+
+
+## (d). 
+Consider the model M2 from part (a). Use matrix methods to find the uncorrected SSR, the uncorrected total sum of squares SST, and the SSE
+```{r}
+
+SSR <- t(y) %*% x %*% inv.xtx %*% t(x) %*% y
+SSR
+
+SST <- t(y) %*% y
+SST
+
+SSE <- t(y) %*% ( id - x %*% inv.xtx %*% t(x) ) %*% y
+SSE
+
+
+```
+
+## (e). 
+Consider the model M2 from part (a). State in words the interpretation of 
+i. $\hat{\beta_1}$ 
+ii. $\hat{\beta_2}$ 
+iii) $\hat{\tau_1}$
+
+$\hat{\beta_1}$ = -0.843740
+Given the estimated coefficient for the smoke variable is -0.843740., the estimated average in birth weight of babies (Bwtkg) will decrease at approximately 0.843740kg, given that all the other variable are constant. 
+
+
+$\hat{\beta_2}$ = -0.002894
+Given the estimated coefficient for maternal weight, the estimated average in birth weight of babies (Bwtkg) will decrease by approximately 0.002894kg, given that all the other variable are constant. 
+
+
+$\hat{\tau_1}$ = -0.528942
+Given the estimated coefficient for race, the estimated average of Race group 1 (this is because the race hasn't been categorized) 
+
+## 2. 
+Consider a linear model $y_i = \beta x_i + \epsilon i$, i = 1,...,n,  with $\epsilon_i$$\sim$ N(0, $\sigma^2$) for a given n-pairs of values (xi, yi), i = 1, . . . , n. Use the matrix method for general linear models to show that the MLE of $\beta$ has the form 
+\begin{equation}
+\hat{\beta} = (\frac{\sum_{i=1}^{n} x_i y_i}{\sum_{i=1}^{n} x^2i})
+\end{equation}
+
+```{r, echo=FALSE}
+knitr::include_graphics("q2.jpg")
+```
+
+
+
+
+
+
+
+
+
+
