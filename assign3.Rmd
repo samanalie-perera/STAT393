@@ -1,0 +1,357 @@
+---
+title: "Assignment3_STAT393"
+author: "Samanalie Perera, 300486075"
+date: "25th September 2023"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Data set: Housing Values in Suburbs of Boston
+
+## The Boston data frame has 506 rows (observations) on 14 variables (columns):
+• crim: per capita crime rate by town.
+
+• zn: proportion of residential land zoned for lots over 25,000 sq.ft.
+
+• indus: proportion of non-retail business acres per town.
+
+• chas: Charles River dummy variable (= 1 if tract bounds river; 0 otherwise).
+
+• nox: nitrogen oxides concentration (parts per 10 million).
+
+• rm: average number of rooms per dwelling.
+
+• age: proportion of owner-occupied units built prior to 1940.
+
+• dis: weighted mean of distances to five Boston employment centres.
+
+• rad: index of accessibility to radial highways.
+
+• tax: full-value property-tax rate per $10,000.
+
+• ptratio: pupil-teacher ratio by town.
+
+• black: 1000(Bk - 0.63)ˆ2 where Bk is the proportion of blacks by town.
+
+• lstat: lower status of the population (percent).
+
+• medv: median value of owner-occupied homes in $1000s
+
+```{r}
+library(MASS)
+attach(Boston)
+head(Boston)
+```
+
+# Question 1: Define a new variable, the reciprocal of lstat, as follows
+```{r}
+lstatinv <- 1/lstat
+```
+
+# Question 2:  Fit the following six models, each with explanatory variables entered in alphabetical order:
+
+model1: medv = $\beta0$ + $\beta_2dis$ + $\beta_3lstat$ + $\beta_4ptratio$ + $\beta_5rm$ + $\epsilon$
+
+model2: medv = $\beta0$ + $\beta_1age$ + $\beta_2dis$ + $\beta_3lstat$ + $\beta_4ptratio$ + $\beta_5rm$ + $\epsilon$
+
+model3: medv = $\beta0$ + $\beta_2dis$ + $\beta_3lstatinv$ + $\beta_4ptratio$ + $\beta_5rm$ + $\epsilon$
+
+model4: medv = $\beta0$ + $\beta_1age$ + $\beta_2dis$ + $\beta_3lstatinv$ + $\beta_4ptratio$ + $\beta_5rm$ + $\epsilon$
+
+model5: medv = $\beta0$ + $\beta_2dis$ + $\beta_3log(lstatinv)$ + $\beta_4ptratio$ + $\beta_5rm$ + $\epsilon$
+
+model6: medv = $\beta0$ + $\beta_1age$ + $\beta_2dis$ + $\beta_3log(lstatinv)$ + $\beta_4ptratio$ + $\beta_5rm$ + $\epsilon$
+
+Include R output from the summary() command for each of the six models.
+
+```{r}
+#model 1
+model1 <- lm(medv~dis+lstat+ptratio+rm, data=Boston, x = T)
+summary(model1)
+
+```
+
+```{r}
+#model2
+model2 <- lm(medv~ age+ dis + lstat + ptratio + rm, data=Boston, x = T)
+summary(model2)
+
+```
+
+```{r}
+#model3
+model3 <- lm(medv~dis + lstatinv + ptratio + rm, data=Boston, x = T)
+summary(model3)
+
+```
+
+```{r}
+#model4
+model4 <- lm(medv~ age + lstatinv + ptratio + rm, data=Boston, x = T)
+summary(model4)
+```
+
+```{r}
+#model5
+model5 <- lm(medv~ dis + log(lstatinv) + ptratio + rm, data=Boston, x = T)
+summary(model5)
+
+```
+
+```{r}
+#model6
+model6 <- lm(medv~ age + dis + log(lstatinv) + ptratio + rm, data=Boston, x = T)
+summary(model6)
+```
+
+For the next six questions (Q3-Q8), recall that if modelA has explanatory variables that are a subset of
+those in modelB, a sequential F-test can be performed with the R command anova(modelA, modelB).
+Also recall that anova(modelA) will break down the total sum of squares (SST) into terms explained
+sequentially by modelA, which add to give the regression sum of squares (SSR), along with the residual (or
+estimated error) sum of squares, SSE. Further, remember that models with the same dependent variable
+can be compared using AIC(), BIC(), adjusted $R^2$ [i.e. $\bar R^2$], or residual standard error (RSE).
+
+## Question 3: Based on AIC values, rank the six models fitted in Question 2 from best to worst, for the prediction/explanation of medv values
+```{r}
+AIC(model1, model2, model3, model4, model5, model6)
+```
+The lower the AIC values the better the model. So the best to worst models are model 5, model 6, model 4, model 3, model 2, model 1. 
+
+
+
+## Question 4: Based on adjusted R2 values, rank the six models fitted in Question 2 from best to worst, for the prediction/explanation of medv values
+```{r}
+c(summary(model1)$adj.r.squared,summary(model2)$adj.r.squared,summary(model3)$adj.r.squared,
+  summary(model4)$adj.r.squared,summary(model5)$adj.r.squared,summary(model6)$adj.r.squared)
+
+```
+
+The higher the $R^2$ value the better the value, so best to worst models would be model 5, model 6, model 3, model 4, model 2, model 1
+
+
+
+## Question 5: Based on BIC values, rank the six models fitted in Question 2 from best to worst, for the prediction/explanation of medv values.
+```{r}
+BIC(model1, model2, model3, model4, model5, model6)
+
+```
+
+The lower the BIC value the better the model, so best to worst models would be model 5, model 6, model 4, model 3, model 2 and model 1. This is the same as the AIC rankings. 
+
+## Question 6: Comment on/discuss the similarities and/or differences in the model rankings that you have provided in Questions 3 to 5.
+
+Overall all model 5 ended up being the best model with the lowest AIC, BIC and the highest $R^2$ values. This means that the log value of the inverse
+
+
+## Question 7: Explain why the explanatory variable age is statistically significant in anova(model6) but not significant in summary(model6)
+```{r}
+anova(model6)
+summary(model6)
+```
+The command anova(model6) breaks down the total sum of squares in terms of which terms were entered first. So having age being entered first in the ANOVA command it ends up being equivalent to fitted a simple regression model of 'medv' against only the variable 'age'. The regression shows a significant relationship since the p-value is close to 0. This means that the variable 'age' has a rather large influence on the variable 'medv'.   
+
+
+## Question 8: Discuss the result from anova(model5, model6) and the statistical significance of the explanatory variable age in summary(model6). Include in your discussion explicit commentary about the F-statistic from anova(model5, model6) and the t-statistic on age in summary(model6)
+```{r}
+anova(model5,model6)
+summary(model6)
+
+```
+
+anova(model5, model6) performs a F-test with the extra variables in model 6 in comparison to the variables in model 5. The only additional variable in model 6 is age, so the F-statistic and t-statistic are testing the exact same null hypothesis. The F-statistic is 0.724 which is $0.851^2$ t-statistic value squared. Since the p-values are very similar 0.3953 and 0.395 the null hypothesis is also not rejected so given that, we can see that age is not a useful linear predictor medv, given the other variables dis, log(lstatinv), ptratio and rm. 
+
+
+## Consider only model3 in Questions 9-17, that is:
+```{r}
+model3 <- lm(medv~dis + lstatinv + ptratio + rm, data=Boston, x = T)
+summary(model3)
+```
+
+
+## Question 9: Give an interpretation of the R^2 value for model3.
+```{r}
+summary(model3)$r.squared
+
+```
+The $R^2$ value in model 3 explains 72.67% of the variation in the response variable medv on the explanatory variables, dis, lstatinv, ptratio and rm. 
+
+## Question 10.  Use the predict() function to compute a 95% confidence interval and a 95% prediction interval for the response variable (medv) in model3, evaluated at the mean values of all the explanatory variables in the model.
+```{r}
+model3Mean <- data.frame(dis=mean(dis), lstatinv=mean(lstatinv), ptratio=mean(ptratio), rm=mean(rm))
+model3Mean
+```
+
+```{r}
+predict(model3, newdata=model3Mean, interval="confidence")
+```
+
+```{r}
+predict(model3, newdata=model3Mean, interval="prediction")
+```
+
+We can see that from this the 95% confidence interval and the 95% prediction intervals are both centered around the same estimate 22.53 (2dp), for the response variable medv.  
+The confidence interval of medv is (22.11, 22.95) and the prediction interval of medv is (13.04, 32.03). 
+
+
+## Question 11 Use the function model.matrix() to create the design matrix X of model3, then print the first 10 rows of the matrix X.
+```{r}
+X <- model.matrix(model3)
+X[1:10,]
+```
+
+## Question 12: Calculate and print the LSE
+
+$\hat{\beta}$ = $(X^TX)^-1 X^Ty$
+
+```{r}
+y <- medv
+beta_hat <- solve(t(X) %*% X) %*% t(X) %*% y
+beta_hat
+
+```
+
+# Question 13: Calculate the predicted values
+$\hat{y}$ = $X\beta$
+
+```{r}
+y_hat <- X %*% beta_hat
+y_hat[1:10]
+```
+
+
+## Question 14: Calculate and print the residual standard error (RSE), then calculate the covariance matrix of $\hat{beta}$
+
+Var($\hat{\beta}$) = $\sigma^2(X^TX)^-1$
+
+Given Var($\hat{\beta}$), calculate and print the standard errors of the estimated regression coefficients, SE($\hat{\beta}$.
+```{r}
+SSE <- t(y-y_hat) %*% (y-y_hat)
+n <- length(y)
+p <- ncol(X)
+RSE <- sqrt(SSE/(n-p))
+RSE
+```
+```{r}
+sigma_sq_hat <- as.numeric(RSE^2)
+Var_beta_hat <- sigma_sq_hat*solve(t(X) %*% X)
+Var_beta_hat
+```
+```{r}
+SE_beta <- sqrt(diag(Var_beta_hat))
+SE_beta
+```
+
+For the next three questions (Q15-17), make use of the diagnostic metrics available in the augment() function from package broom. You will probably find it helpful to use syntax from the tidyverse package as well; for example, to add index numbers to the rows of data (as used in the lecture notes document “Diagnostics for linear regression”). You should also include specific diagnostic plots, as appropriate. As above, only consider model3 for these questions:
+```{r}
+model3 <- lm(medv~dis + lstatinv + ptratio + rm, data=Boston, x = T)
+summary(model3)
+
+```
+
+## Question 15 (a): State the maximum value of the response variable medv in the Boston data.
+```{r}
+max(medv)
+```
+
+## Question 15 (b). Print out diagnostic information about the five observations with the largest fitted values from model3.
+```{r}
+library(tidyverse)
+library(broom)
+
+model.diag.metrics3 <- augment(model3)
+model.diag.metrics3 <- model.diag.metrics3 %>%
+  mutate(index = 1:nrow(model.diag.metrics3)) %>%
+  #instead of doing everything(), can specfiy 
+  select(index, everything())
+model.diag.metrics3 %>%
+  top_n(5, wt = .fitted)
+
+```
+
+## Question 16 (a): Print out diagnostic information about the five observations with the largest (absolute value) residuals from model 3.  
+```{r}
+model.diag.metrics3 %>%
+  top_n(5, wt = abs(.resid))
+
+```
+
+
+## Question 16 (b): Print diagnostic plot 1, which displays Residuals vs Fitted values.
+```{r}
+plot(model3,1)
+```
+
+
+## Question 16 (c): How many observations have standardized residuals greater than 3 in absolute value, indicating they may be possible outliers?
+```{r}
+model.diag.metrics3[abs(model.diag.metrics3$.std.resid) > 3,]
+```
+There are 5 observations that have a standardized residuals greater than 3 in absolute value. 41, 369, 370, 372, 373.
+
+
+## Question 16 (d): What percentage of the data (to 2dp) are possible outliers, using the definition from Q16c?
+```{r}
+dimensions <- dim(model.diag.metrics3)
+dimensions
+```
+
+
+To find out the percentage of the data that are possible outliers is by using the residual divided by its estimated standard error.
+
+Since there are 5 standardized residuals it will be 5/506 = 0.0099 = 99%, which is the percentage of the possible outliers.  
+
+## Question 17 (a): Print out diagnostic information about the five observations with the largest leverages from model3.
+```{r}
+model.diag.metrics3 %>%
+  top_n(5, wt = .hat)
+
+```
+
+## Question 17 (b): Print diagnostic plot 5, which displays the (standardized) Residuals vs Leverages.
+```{r}
+plot(model3,5)
+
+```
+
+## Question 17 (c): Calculate the value 2p/n that identifies observations with “high leverage”. How many times bigger (to 2dp) than 2p/n is the highest leverage value?
+```{r}
+n <- length(y)
+p <- ncol(X)
+high.lev <- 2*p/n
+high.lev
+
+
+max((model.diag.metrics3$.hat)/high.lev)
+
+```
+
+The value of 2p/n that identifies observations with “high leverage” is 2 × 5/n = 10/506 = 0.0198 = 0.02. The highest leverage value is max(hii) = 0.1136. Hence (to 2dp) the highest leverage value is 5.75 times bigger than 2p/n. There are 52 observations with “high leverages”, which is just over 10% of the data:
+
+## Question 18: Given your answers to Questions 15-17, discuss any features of the Boston data which are problematic for prediction using any of the linear regression models fitted in this assignment. Despite those issues, which of the six models fitted in Question 2 do you recommend as ‘best’, and why?
+
+From this analysis we can see that there are many observations that cause issues within the Boston dataset where the response variable medv is equal to the maximum value of 50. Those points are the ones that lie on the straight line in some of the residual diagnostic plots. Those values are the one that have the highest leverage value and the largest standardised resudials. 
+
+
+One of the options to help improve the data is to remove 16 observations and then refit models to the new data. Another thing is to test the different values in the dataset to try and find a new subset of variables that would fit better. 
+
+Within all the models in Question 2, model 5 is the best. After doing all the tests model 5 ended up being preferred. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
