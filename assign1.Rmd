@@ -1,0 +1,245 @@
+---
+title: "Assignment1_STAT393"
+author: "Samanalie Perera 300486075"
+date: "27 July 2023"
+classoption: 12pt
+
+header-includes:
+  - \usepackage{newpxtext,eulerpx, amsmath}
+  - \usepackage{bm,bbm}
+  - \usepackage{float}
+  - \floatplacement{figure}{H}
+
+output: bookdown::pdf_document2
+
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+## Question 1: 
+## (a):
+### In assessing the impact of rainfall on the growth pattern of tussock grass (Chionochloa rubra), several square metre plots were observed in 9 locations. 4 locations were in one block A, and 5 in a second block B. In each plot the annual rainfall (x) and the number of shoots per square metre (y) were recorded.
+```{r}
+library(ggplot2)
+df <- data.frame(block = c(rep("A", 4), rep("B", 5)), 
+                 annRain = c(47, 26, 116, 178, 19, 75, 160, 31, 12), 
+                 shoots = c(15.1, 14.1, 13.2, 12.7, 14.6, 13.8, 11.9, 14.8, 15.3))
+
+ggplot(df, aes(x=annRain,y=shoots, colour=block))+
+  geom_text(aes(label=block)) + theme(legend.position="none") +
+  labs(x = "Annual Rainfall (mm)", y = "Number of Shoots per Square Metre") +
+  ggtitle('Rainfall on the growth pattern of tussock grass')
+
+
+```
+
+
+## (b):
+### Ignoring the grouping of the plots into blocks, fit a linear regression model y = $\alpha$ + $\beta$ x in R. State the equation of the fitted regression line to 4 significant figures.
+```{r}
+# Fit the linear regression model
+lm_fit <- lm(shoots ~ annRain, data = df, x = T)
+summary(lm_fit)
+
+#finding beta and alpha from the coef
+coef(lm_fit)
+
+# Display the equation of the fitted regression line to 4 significant figures
+cat("Fitted Regression Line: y =", coef(lm_fit)[1], coef(lm_fit)[2], "x\n")
+
+```
+
+
+## (c):
+### Draw the regression line on your scatterplot. Attach the plot created in R.
+```{r}
+ggplot(df, aes(x=annRain,y=shoots))+
+  geom_text(aes(label=block)) + theme(legend.position="none") +
+  labs(x = "Annual Rainfall (mm)", y = "Number of Shoots per Square Metre") +
+  ggtitle('Rainfall on the growth pattern of tussock grass')+
+  geom_smooth(method = "lm", se = FALSE)
+```
+
+## (d):
+### Write down the model/design matrix (X) and  $\beta$ for the regression model in (b) in the form y = X$\beta$ + $\varepsilon$
+```{r}
+objects(lm_fit)
+#to create the design matrix
+lm_fit$x
+```
+
+$$
+\boldsymbol{\beta}=\begin{pmatrix}
+\alpha \\ \beta
+\end{pmatrix}
+$$
+
+## (e):
+### The ANCOVA model allowing for different regression relationships in each block is yij = $\mu$ + $\alpha$i + $\beta$i xij + $\varepsilon$ij, where  where i refers to Block: i = 1 (A), and 2 (B). Treating Block A as the reference block. Write down the constraints on the parameters
+
+### This model matrix has constraints $\alpha_2$ = 0 and $\beta$ = 0
+
+## (f):
+### The model in (e) can be expressed in the form y = X$\beta$ + $\varepsilon$. Write down y, X, and $\beta$ for the rainfall data.
+
+$$
+{\bf y}=\begin{pmatrix}
+15.1\\
+14.1\\
+13.2\\
+12.7\\
+14.6\\
+13.8\\
+11.9\\
+14.8\\
+15.3\\
+\end{pmatrix}
+     ,\,\,\,\,\,\,\,\, 
+      X=\begin{pmatrix}
+            1 & 0 & 47 & 0\\
+            1 & 0 & 26 & 0\\
+            1 & 0 & 116 & 0\\
+            1 & 0 & 178 & 0\\
+            1 & 1 & 19 & 19\\
+            1 & 1 & 75 & 75\\
+            1 & 1 & 160 & 160\\
+            1 & 1 & 31 & 31\\
+            1 & 1 & 12 & 12\\
+           \end{pmatrix}
+      ,\,\,\,\,\,\,\,\, 
+ \boldsymbol{\beta}=\begin{pmatrix}
+\mu \\ \alpha_1 \\ \beta_0 \\ \beta_1
+\end{pmatrix}
+$$
+
+## (g):
+### Fit the model in (e) in R. State the parameter estimates, including $\hat{\sigma}$ to 4 significant figures.
+```{r}
+Block <- factor(df$block)
+lm_fit2 <- lm(df$shoots~ relevel(Block, ref="A") + df$annRain + 
+                relevel(Block, ref="A"):df$annRain, x=T)
+summary(lm_fit2)
+```
+
+```{r}
+lm_fit2$x
+
+```
+
+$$
+\hat{\mu}= 14.9725 \\
+\hat{\alpha_1} = 0.3823 \\
+\hat{\beta_0} = -0.0131 \\
+\hat{\beta_1} = -0.0084 \\
+\hat{\sigma} = 0.4647 \\
+$$
+
+
+## (h):
+### Are the slopes of two blocks the same? Justify your answer.
+
+We need to test the hypothesis. H0: $\beta_1$ = 0 vs H1: $\beta_1$ $\neq$ 0. From the above input we can see that the p-value is  0.182 which is larger than any of the significance levels of 0.05 and 0.01. From this we can conclude that we do not reject H0. Therefore the slops of the two blocks are the same at a 5% or 1% level. 
+
+
+## Question 2:
+
+$$
+A = \begin{bmatrix}
+a_{11} & a_{12} & a_{13} \\
+a_{21} & a_{22} & a_{23} \\
+a_{31} & a_{32} & a_{33} \\
+\end{bmatrix}
+$$
+$$
+B = \begin{bmatrix}
+b_{11} & b_{12} & b_{13} \\
+b_{21} & b_{22} & b_{23} \\
+b_{31} & b_{32} & b_{33} \\
+\end{bmatrix}
+$$
+## (a):
+### Find AB and BA
+```{r}
+knitr::include_graphics("2(a).jpg")
+```
+
+
+## (b):
+### If both A and B are symmetric, are AB and BA equal?
+
+To find whether a matrix is symmetric it needs to equal its transpose such as matrix A = $A^T$. So to find out whether AB and BA are equal, we need to find the transpose of AB; $AB^T$.
+Since A and B are symmetric we end up with A = $A^T$ and B = $B^T$. 
+$AB^T$ which is $(A * B)^T$ = $B^T$ * $A^T$
+and the transpose of $B^T$ = B and the transpose of $A^T$ = A
+so therefore $AB$ = $BA$
+
+And we can do the same for $BA^T$. Where $(B * A)^T$ = $A^T$ * $B^T$
+and the transpose of $A^T$ = A and the transpose of $B^T$ = B
+so therefore $BA$ = $AB$
+
+So now we know that if both A and B are symmetic then AB and BA are equal. 
+
+
+
+## (c):
+### Show that tr(AB) = tr(BA)
+```{r}
+knitr::include_graphics("2(c).jpg")
+
+```
+
+
+## Question 3:
+
+### If y $\sim$ N($\mu$, $\Sigma$) and A has full row rank, it follows that Ay $\sim$ N(A$\mu$, A$\Sigma$$A^T$ ) (Theorem 2 in the notes on p. 39). Use this result to find the joint distribution of $w_1$ and $w_2$, where $w_1$ = $y_1$ + $y_2$ - 2$y_3$ and $w_2$ = $y_1$ + $y_2$ given that y $\sim$ N($\mu$, $\Sigma$), with,
+$$
+{\mu} = \begin{bmatrix}
+1\\
+0\\
+0 \\
+\end{bmatrix}
+$$
+$$
+{\Sigma} = \begin{bmatrix}
+4 & 1 & 0 \\
+1 & 2 & 1 \\
+0 & 1 & 3 \\
+\end{bmatrix}
+$$
+```{r}
+knitr::include_graphics("3pt1.jpg")
+```
+
+```{r}
+knitr::include_graphics("3pt2.jpg")
+```
+
+## Question 4:
+```{r}
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
